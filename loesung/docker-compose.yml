@@ -1,0 +1,49 @@
+version: "2" 
+
+services:
+
+  # Service für die Datenbank
+  mysql:
+    # Benutze das Standard-Image bereitgestellt vom Hersteller
+    image: accso/lazy-mysql
+
+    # Setze Environment-Variablen
+    environment:
+      - "MYSQL_ROOT_PASSWORD=test123"
+      - "WARTEZEIT=2"
+
+    # Stelle das Volume 'mysql-data' im Container unter '/var/lib/mysql' zur Verfügung
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  # Service für owncloud
+  owncloud:
+    # Baue lokal eine Ableitung von owncloud
+    build:
+      context: .
+      dockerfile: owncloud-Dockerfile
+
+    # Benenne das gebaute Image
+    image: my_secure_owncloud
+
+    # Setze die Werte für move_uid_and_gid.sh
+    environment:
+      - "NEW_OWNCLOUD_UID=2222"
+      - "NEW_OWNCLOUD_GID=2222"
+
+    # Veröffentliche den Port 80 des Containers als Port 8888 des Docker-Hosts
+    ports:
+      - "8889:80"
+
+    # Baue und Starte die folgenden Container zuerst als Vorbereitung
+    depends_on:
+      - mysql
+
+    # Stelle das Volume "owncloud" im Container unter '/var/www/html' zur Verfügung
+    volumes:
+      - owncloud:/var/www/html
+
+# Deklariere die erforderlichen Volumes
+volumes:
+  mysql-data:
+  owncloud:
